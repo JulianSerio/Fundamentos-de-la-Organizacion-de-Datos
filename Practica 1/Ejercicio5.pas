@@ -1,219 +1,148 @@
 program untitled;
 
 type
-	empleado = record
-		num:integer;
-		ape:string[15];
-		nom:string[15];
-		edad:integer;
-		dni:integer;
+	celular = record
+		codigo:integer;
+		nombre:string[12];
+		descripcion:string[20];
+		marca:string[12];
+		precio:real;
+		stockMin:integer;
+		stockDispo:integer;
 	end;
 	
-	archivo = file of empleado;
+	archivo = file of celular;
 	
-procedure leer (var e:empleado);
-begin
-	with e do begin
-		write ('INGRESE APELLIDO DE EMPLEADO: '); readln (ape);
-		if (ape <> 'fin') then begin
-			write ('INGRESE NOMBRE DE EMPLEADO: '); readln (nom);
-			write ('INGRESE NRO DE EMPLEADO: '); readln (num);
-			write ('INGRESE EDAD DE EMPLEADO: '); readln (edad);
-			write ('INGRESE DNI DE EMPLEADO: '); readln (dni);
-		end;
-		writeln ('')
-	end;
-end;
 
-procedure cargarFile (var arch:archivo);
+procedure cargarFile (var arch:archivo; var archivoTexto:Text);
 var
-	e:empleado;
+	cel:celular;
 begin
+	reset(archivoTexto);
 	rewrite(arch);
-	leer(e);
-	while(e.ape <> 'fin') do begin
-		write(arch,e);
-		leer(e);
+	while (not EOF(archivoTexto)) do begin
+		readln(archivoTexto,cel.codigo,cel.precio,cel.marca);
+		readln(archivoTexto,cel.stockDispo,cel.stockMin,cel.descripcion);
+		readln(archivoTexto,cel.nombre);
+		write(arch,cel);
 	end;
+	close(archivoTexto);
 	close(arch);
 end;
 
-procedure datoDeterminado(var arch:archivo);
+procedure imprimirCelular (cel:celular);
+begin
+	with cel do begin
+		writeln('Codigo: ',cel.codigo);
+		writeln('Nombre: ',cel.nombre);
+		writeln('Descripcion: ',cel.descripcion);
+		writeln('Marca: ',cel.marca);
+		writeln('Precio: ',cel.precio:0:2);
+		writeln('Stock minimo: ',cel.stockMin);
+		writeln('Stock disponible: ',cel.stockDispo);
+		writeln('---------');
+	end;
+end;
+
+
+procedure listarStockMin (var arch:archivo);
 var
-	dato:string[15];
-	emp:empleado;
+	cel:celular;
 begin
 	reset(arch);
-	write('Ingrese dato: ');readln(dato);
+	writeln;
 	while (not EOF(arch)) do begin
-		read(arch,emp);
-		if ((emp.nom = dato) or (emp.ape = dato)) then writeln('Empleado ',emp.nom,' ',emp.ape);
-	end;
-	close(arch);
-end;
-
-procedure imprimirEmpleados(var arch:archivo);
-var
-	emp:empleado;
-begin
-	reset(arch);
-	while (not EOF(arch)) do begin
-		read(arch,emp);
-		writeln('Nombre: ',emp.nom);
-		writeln('Apellido: ',emp.ape);
-		writeln('DNI: ',emp.dni);
-		writeln('Edad: ',emp.edad);
-		writeln('Numero: ',emp.num);
-		writeln('-------------');
-		writeln;
-	end;
-	close(arch);
-end;
-	
-procedure proximosJubilarse(var arch:archivo);
-var
-	emp:empleado;
-begin
-	reset(arch);
-	while (not EOF(arch)) do begin
-		read(arch,emp);
-		if (emp.edad > 70) then writeln('Proximos jubilarse: ',emp.nom,' ',emp.ape);
-	end;
-	close(arch);
-end;
-	
-procedure buscarPorNumero (var arch:archivo; var esta:boolean; numEmp:integer);
-var
-	emp:empleado;
-begin
-	while ((not EOF(arch)) and (not esta)) do begin
-		read(arch,emp);
-		if (numEmp = emp.num) then esta := true;
-	end;
-	if (esta) then 
-		writeln('El empleado ESTA')
-	else 
-		writeln('El empleado NO esta');
-end;
-
-procedure agregarEmpleado(var arch:archivo);
-var
-	e:empleado;
-	esta:boolean;
-begin
-	esta:=false;
-	reset(arch);
-	write('Numero: ');readln(e.num);
-	buscarPorNumero(arch,esta,e.num);
-	if (not esta) then begin
-		write('Nombre: ');readln(e.nom);
-		write('Apellido: ');readln(e.ape);
-		write('Edad: ');readln(e.edad);
-		write('Dni: ');readln(e.dni);
-		write(arch,e);
-	end;
-	close(arch);
-end;
-
-procedure modificarEdad (var arch:archivo);
-var
-	num,edad:integer;
-	esta:boolean;
-	emp:empleado;
-begin
-	esta:= false;
-	writeln('Ingrese NUM a buscar');readln(num);
-	writeln('Ingrese EDAD a actualizar');readln(edad);
-
-	reset(arch);
-	while ((not EOF(arch)) and (not esta)) do begin
-		read(arch,emp);
-		if (num = emp.num) then begin
-			emp.edad := edad;
-			seek(arch,filepos(arch) - 1); //filepos devuelve la pos del sig
-			write(arch,emp);
-			esta:=true;
+		read(arch,cel);
+		if (cel.stockDispo < cel.stockMin) then begin
+			imprimirCelular(cel);
 		end;
 	end;
 	close(arch);
 end;
-		
-procedure exportarContenido (var arch:archivo; var archTodo:archivo);
-var
-	emp:empleado;
-begin
-	assign(archTodo,'C:\Users\Julian\Desktop\FOD\todos_empleados.txt');
-	rewrite(archTodo);
-	reset(arch);
-	while (not EOF(arch)) do begin
-		read(arch,emp);
-		write(archTodo,emp);
-	end;
-	close(arch);
-	close(archTodo);
-end;
 
-procedure exportarSinDni(var arch,archivoSinDni:archivo);
+procedure listarDescripcion (var arch:archivo);
 var
-	emp:empleado;
+	cel:celular;
+	cadena:string;
 begin
-	assign(archivoSinDni,'C:\Users\Julian\Desktop\FOD\faltaDNIEmpleado.txt');
-	rewrite(archivoSinDni);
 	reset(arch);
+	writeln;
+	writeln('Ingrese cadena:');readln(cadena);
+	cadena := ' '+cadena;
 	while (not EOF(arch)) do begin
-		read(arch,emp);
-		if (emp.dni = 00) then write(archivoSinDni,emp);
-	end;
-	close(arch);
-	close(archivoSinDni);
-end;
-
-procedure menu (var arch,archivoTodos,archivoSinDni:archivo);
-var
-	op:integer;
-begin
-	writeln('1-Crear archivo');
-	writeln('2-Listar empleado determinado');
-	writeln('3-Imprimir empleados');
-	writeln('4-Listar proximos a jubilarse');
-	writeln('5-Anadir mas empleados');
-	writeln('6-Modificar edad de un empleado');
-	writeln('7-Exportar contenido');
-	writeln('8-Exportar empleados con DNI 00');
-	writeln('0-Salir');
-	writeln('Ingrese opcion:');
-	readln(op);
-	while (op <> 0) do begin
-		case op of 
-			1: cargarFile(arch);
-			2: datoDeterminado(arch);
-			3: imprimirEmpleados(arch);
-			4: proximosJubilarse(arch);
-			5: agregarEmpleado(arch);
-			6: modificarEdad(arch);
-			7: exportarContenido(arch,archivoTodos);
-			8: exportarSinDni(arch,archivoSinDni);
+		read(arch,cel);
+		if (cel.descripcion = cadena) then begin
+			imprimirCelular(cel);
 		end;
+	end;
+	close(arch);
+end;
+
+procedure cargarArchivo(var arch:archivo;var archivoTexto:Text);
+var
+	cel:celular;
+begin
+	rewrite(archivoTexto);
+	reset(arch);
+	while (not EOF(arch)) do begin
+		read(arch,cel);
+		writeln(archivoTexto,cel.codigo,cel.precio:0:2,cel.marca);
+		writeln(archivoTexto,cel.stockDispo,cel.stockMin,cel.descripcion);
+		writeln(archivoTexto,cel.nombre);
+	end;
+	close(arch);
+	close(archivoTexto);
+end;
+
+procedure menu (var arch:archivo; var archCarga:Text; var celulares:Text);
+	procedure mostrarOpciones (var op:integer);
+	begin
 		writeln('1-Crear archivo');
-		writeln('2-Listar empleado determinado');
-		writeln('3-Imprimir empleados');
-		writeln('4-Listar proximos a jubilarse');
-		writeln('5-Anadir mas empleados');
-		writeln('6-Modificar edad de un empleado');
-		writeln('7-Exportar contenido');
-		writeln('8-Exportar empleados con DNI 00');
+		writeln('2-Listar celulares con stock menor al minimo');
+		writeln('3-Listar celulares descripcion especifica');
+		writeln('4-Cargar archivo celulares.txt');
+		writeln('5-Imprimir contenido');
 		writeln('0-Salir');
 		writeln('Ingrese opcion:');
 		readln(op);
 	end;
+	
+	procedure imprimirArchivo(var arch:archivo);
+	var
+		cel:celular;
+	begin
+		reset(arch);
+		while (not EOF(arch)) do begin
+			read(arch,cel);
+			imprimirCelular(cel);
+		end;
+		close(arch);
+	end;
+var
+	op:integer;
+begin
+	mostrarOpciones(op);
+	while (op <> 0) do begin
+		case op of 
+			1: cargarFile(arch,archCarga);
+			2: listarStockMin(arch);
+			3: listarDescripcion(arch);
+			4: cargarArchivo(arch,celulares);
+			5: imprimirArchivo(arch);
+		end;
+		mostrarOpciones(op);
+	end;
 end;
 
 var
-	arch,archivoTodos,archivoSinDni:archivo;
-	nombre:string;
+	arch:archivo;
+	archivoTexto:Text;
+	nom:string;
+	celulares:Text;
 BEGIN
-	write('Ingresar nombre: ');
-	readln(nombre);
-	assign(arch,nombre);
-	menu(arch,archivoTodos,archivoSinDni);
+	write('Ingrese nombre: ');readln(nom);
+	assign(archivoTexto,'celulares.txt');
+	assign(celulares,'celulares2.txt');
+	assign(arch,nom);
+	menu(arch,archivoTexto,celulares);
 END.
