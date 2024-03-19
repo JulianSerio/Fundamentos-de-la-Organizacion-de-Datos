@@ -83,7 +83,6 @@ procedure buscarPorNumero (var arch:archivo; var esta:boolean; numEmp:integer);
 var
 	emp:empleado;
 begin
-	reset(arch);
 	while ((not EOF(arch)) and (not esta)) do begin
 		read(arch,emp);
 		if (numEmp = emp.num) then esta := true;
