@@ -78,7 +78,7 @@ var
 	i:integer;
 	acumHoras:integer;
 begin
-	for i:= 0 to N do begin
+		for i:= 0 to N do begin
 		reset(v[i]);
 		leer(v[i],vReg[i]);
 	end;
@@ -89,12 +89,10 @@ begin
 		regMaestro.codigo := min.codigo;
 		regMaestro.fecha := min.fecha;
 		codActual := min.codigo;
-		while  (min.codigo = codActual) do begin
-			fechaActual := min.fecha;
-			while (codActual = min.codigo) and (fechaActual = min.fecha) do begin
-				acumHoras := acumHoras + min.tiempo;
-				minimo(v,vReg,min);
-			end;
+		fechaActual := min.fecha;
+		while (codActual = min.codigo) and (fechaActual = min.fecha) do begin
+			acumHoras := acumHoras + min.tiempo;
+			minimo(v,vReg,min);
 		end;
 		regMaestro.tiempoTotal := acumHoras;
 		write(maestro,regMaestro);
